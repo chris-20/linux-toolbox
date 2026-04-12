@@ -1,28 +1,28 @@
 #!/bin/bash
 set -e
 
-echo "🔄 Update & Installation..."
+echo "🔄 Update läuft..."
 apt update -y
-apt install -y curl net-tools unattended-upgrades apt-listchanges
 
-echo "🔐 Aktiviere automatische Sicherheitsupdates..."
-dpkg-reconfigure -f noninteractive unattended-upgrades
+echo "📦 Installiere Pakete..."
+apt install -y curl net-tools
 
-echo "⚙️ Konfiguriere SSH (Root Login aktivieren)..."
+echo "🔐 Aktiviere Root SSH Login..."
 if grep -q "PermitRootLogin" /etc/ssh/sshd_config; then
     sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
 else
     echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 fi
 
+echo "🔁 Starte SSH neu..."
 systemctl restart ssh
 
-echo "🌐 Ermittle Server-IP..."
+echo "🌐 Hole IP..."
 IP=$(hostname -I | awk '{print $1}')
 
 echo ""
 echo "=============================="
-echo "✅ Setup abgeschlossen!"
-echo "🌍 Server-IP: $IP"
-echo "🔑 SSH: root@$IP"
+echo "✅ Fertig!"
+echo "🌍 IP: $IP"
+echo "🔑 ssh root@$IP"
 echo "=============================="
