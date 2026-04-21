@@ -5,7 +5,7 @@ echo "🔄 Update läuft..."
 apt update -y
 
 echo "📦 Installiere Pakete..."
-apt install -y curl net-tools
+apt install -y curl net-tools git fail2ban wget ca-certificates nano
 
 echo "🔐 Aktiviere Root SSH Login..."
 if grep -q "PermitRootLogin" /etc/ssh/sshd_config; then
