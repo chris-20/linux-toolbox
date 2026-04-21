@@ -14,10 +14,10 @@ else
     echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 fi
 
-echo "🔁 Neustart SSH..."
+echo "🔁 SSH Neustart..."
 systemctl restart ssh
 
-echo "🐳 Docker Repository Setup..."
+echo "🐳 Docker Repository einrichten..."
 
 install -m 0755 -d /etc/apt/keyrings
 
@@ -35,7 +35,7 @@ Architectures: $(dpkg --print-architecture)
 Signed-By: /etc/apt/keyrings/docker.asc
 EOF
 
-echo "🔄 Update Paketlisten..."
+echo "🔄 Paketlisten aktualisieren..."
 apt update -y
 
 echo "📦 Installiere Docker Engine..."
@@ -46,24 +46,24 @@ apt install -y \
   docker-buildx-plugin \
   docker-compose-plugin
 
-echo "🚀 Docker Service aktivieren..."
+echo "🚀 Docker aktivieren..."
 systemctl enable docker
 systemctl restart docker
 
 sleep 3
 
-echo "👤 Docker Zugriff für User setzen..."
+echo "👤 Docker Zugriff vorbereiten..."
 usermod -aG docker $USER || true
 
 echo "📦 Dockhand vorbereiten..."
 
-# alte Instanz entfernen falls vorhanden
-docker rm -f dockhand 2>/dev/null || true
-
-# Volume für Persistenz
+# Volume sicherstellen
 docker volume create dockhand_data || true
 
-echo "🧠 Starte Dockhand (Docker Socket verbunden)..."
+# 🔥 WICHTIG: alten Container sauber entfernen (fix für dein Problem)
+docker rm -f dockhand 2>/dev/null || true
+
+echo "🧠 Starte Dockhand..."
 docker run -d \
   --name dockhand \
   --restart unless-stopped \
@@ -77,12 +77,12 @@ IP=$(hostname -I | awk '{print $1}')
 
 echo ""
 echo "=============================="
-echo "✅ SETUP FERTIG"
+echo "✅ SETUP ABGESCHLOSSEN"
 echo "=============================="
 echo "🌍 Server IP: $IP"
 echo "🧠 Dockhand UI: http://$IP:3000"
 echo "🐳 Docker Socket: verbunden"
-echo "🔁 Auto Restart: aktiv"
+echo "🔁 Auto-Restart: aktiv"
 echo "=============================="
 echo "🔑 SSH: ssh root@$IP"
 echo "=============================="
