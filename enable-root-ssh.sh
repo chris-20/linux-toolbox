@@ -35,7 +35,7 @@ Architectures: $(dpkg --print-architecture)
 Signed-By: /etc/apt/keyrings/docker.asc
 EOF
 
-echo "🔄 Update Paketlisten (Docker Repo)..."
+echo "🔄 Update Paketlisten..."
 apt update -y
 
 echo "📦 Installiere Docker Engine..."
@@ -50,6 +50,18 @@ echo "🚀 Aktiviere Docker Service..."
 systemctl enable docker
 systemctl start docker
 
+echo "📦 Erstelle Dockhand Volume..."
+docker volume create dockhand_data || true
+
+echo "🧠 Starte Dockhand (Docker Management UI)..."
+docker run -d \
+  --name dockhand \
+  --restart unless-stopped \
+  -p 3000:3000 \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v dockhand_data:/app/data \
+  fnsys/dockhand:latest
+
 echo "🌐 Hole IP..."
 IP=$(hostname -I | awk '{print $1}')
 
@@ -57,6 +69,7 @@ echo ""
 echo "=============================="
 echo "✅ Fertig!"
 echo "🌍 IP: $IP"
-echo "🔑 ssh root@$IP"
-echo "🐳 Docker ist installiert"
+echo "🐳 Docker installiert"
+echo "🧠 Dockhand: http://$IP:3000"
+echo "🔑 SSH: ssh root@$IP"
 echo "=============================="
