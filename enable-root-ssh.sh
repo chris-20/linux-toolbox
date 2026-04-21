@@ -1,23 +1,23 @@
 #!/bin/bash
 set -e
 
-echo "🔄 Update läuft..."
+echo "🔄 System Update..."
 apt update -y
 
 echo "📦 Installiere Basis-Pakete..."
 apt install -y curl net-tools git fail2ban wget ca-certificates nano zstd gnupg
 
-echo "🔐 Aktiviere Root SSH Login..."
+echo "🔐 SSH Root Login aktivieren..."
 if grep -q "PermitRootLogin" /etc/ssh/sshd_config; then
     sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
 else
     echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 fi
 
-echo "🔁 Starte SSH neu..."
+echo "🔁 Neustart SSH..."
 systemctl restart ssh
 
-echo "🐳 Installiere Docker (offizielles Repository)..."
+echo "🐳 Docker Repository Setup..."
 
 install -m 0755 -d /etc/apt/keyrings
 
@@ -46,14 +46,24 @@ apt install -y \
   docker-buildx-plugin \
   docker-compose-plugin
 
-echo "🚀 Aktiviere Docker Service..."
+echo "🚀 Docker Service aktivieren..."
 systemctl enable docker
-systemctl start docker
+systemctl restart docker
 
-echo "📦 Erstelle Dockhand Volume..."
+sleep 3
+
+echo "👤 Docker Zugriff für User setzen..."
+usermod -aG docker $USER || true
+
+echo "📦 Dockhand vorbereiten..."
+
+# alte Instanz entfernen falls vorhanden
+docker rm -f dockhand 2>/dev/null || true
+
+# Volume für Persistenz
 docker volume create dockhand_data || true
 
-echo "🧠 Starte Dockhand (Docker Management UI)..."
+echo "🧠 Starte Dockhand (Docker Socket verbunden)..."
 docker run -d \
   --name dockhand \
   --restart unless-stopped \
@@ -62,14 +72,17 @@ docker run -d \
   -v dockhand_data:/app/data \
   fnsys/dockhand:latest
 
-echo "🌐 Hole IP..."
+echo "🌐 IP ermitteln..."
 IP=$(hostname -I | awk '{print $1}')
 
 echo ""
 echo "=============================="
-echo "✅ Fertig!"
-echo "🌍 IP: $IP"
-echo "🐳 Docker installiert"
-echo "🧠 Dockhand: http://$IP:3000"
+echo "✅ SETUP FERTIG"
+echo "=============================="
+echo "🌍 Server IP: $IP"
+echo "🧠 Dockhand UI: http://$IP:3000"
+echo "🐳 Docker Socket: verbunden"
+echo "🔁 Auto Restart: aktiv"
+echo "=============================="
 echo "🔑 SSH: ssh root@$IP"
 echo "=============================="
